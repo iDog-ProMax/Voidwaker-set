@@ -1,6 +1,7 @@
 package com.idogpromax.voidwakerset;
 
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.loot.v3.LootTableEvents;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
@@ -11,6 +12,9 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
+import net.minecraft.world.level.storage.loot.BuiltInLootTables;
+import net.minecraft.world.level.storage.loot.LootPool;
+import net.minecraft.world.level.storage.loot.entries.LootItem;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,7 +48,35 @@ public class VoidWakerSet implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        LOGGER.info("Void Waker Set content registered.");
+
+        // TEST MODE: add all four armour pieces to every End City treasure chest.
+        LootTableEvents.MODIFY.register((key, tableBuilder, source, registries) -> {
+            if (source.isBuiltin()
+                    && BuiltInLootTables.END_CITY_TREASURE.equals(key)) {
+
+                tableBuilder.withPool(
+                        LootPool.lootPool()
+                                .add(LootItem.lootTableItem(VOID_WAKER_HELMET))
+                );
+
+                tableBuilder.withPool(
+                        LootPool.lootPool()
+                                .add(LootItem.lootTableItem(VOID_WAKER_CHESTPLATE))
+                );
+
+                tableBuilder.withPool(
+                        LootPool.lootPool()
+                                .add(LootItem.lootTableItem(VOID_WAKER_LEGGINGS))
+                );
+
+                tableBuilder.withPool(
+                        LootPool.lootPool()
+                                .add(LootItem.lootTableItem(VOID_WAKER_BOOTS))
+                );
+            }
+        });
+
+        LOGGER.info("Void Waker Set registered. End City armour test loot enabled.");
     }
 
     private static Identifier id(String name) {
