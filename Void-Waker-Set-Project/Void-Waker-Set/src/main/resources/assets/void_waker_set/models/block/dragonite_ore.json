@@ -1,6 +1,0 @@
-{
-  "parent": "minecraft:block/cube_all",
-  "textures": {
-    "all": "void_waker_set:block/dragonite_ore"
-  }
-}
