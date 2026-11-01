@@ -3,30 +3,26 @@ package com.idogpromax.voidwakerset;
 import net.fabricmc.api.ModInitializer;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.item.Item;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.MapColor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-/**
- * Initial content-registration pass for Void Waker Set.
- *
- * This intentionally keeps the first build to vanilla registry APIs. The
- * custom equipment names/items and Dragonite ore are registered here; see
- * README for the gameplay systems that still need implementation/testing
- * against the final 26.3 mappings.
- */
+import java.util.function.Function;
+
 public class VoidWakerSet implements ModInitializer {
     public static final String MOD_ID = "void_waker_set";
     public static final Logger LOGGER = LoggerFactory.getLogger(MOD_ID);
 
     public static final Block DRAGONITE_ORE = registerBlock(
             "dragonite_ore",
-            new Block(BlockBehaviour.Properties.of()
+            properties -> new Block(properties
                     .mapColor(MapColor.COLOR_PURPLE)
                     .strength(5.0F, 6.0F)
                     .requiresCorrectToolForDrops())
@@ -51,27 +47,41 @@ public class VoidWakerSet implements ModInitializer {
         LOGGER.info("Void Waker Set content registered.");
     }
 
-    private static Item registerItem(String name) {
-        return Registry.register(
-                BuiltInRegistries.ITEM,
-                Identifier.fromNamespaceAndPath(MOD_ID, name),
-                new Item(new Item.Properties())
-        );
+    private static Identifier id(String name) {
+        return Identifier.fromNamespaceAndPath(MOD_ID, name);
     }
 
-    private static Block registerBlock(String name, Block block) {
-        return Registry.register(
-                BuiltInRegistries.BLOCK,
-                Identifier.fromNamespaceAndPath(MOD_ID, name),
-                block
+    private static ResourceKey<Block> blockKey(String name) {
+        return ResourceKey.create(Registries.BLOCK, id(name));
+    }
+
+    private static ResourceKey<Item> itemKey(String name) {
+        return ResourceKey.create(Registries.ITEM, id(name));
+    }
+
+    private static Item registerItem(String name) {
+        ResourceKey<Item> key = itemKey(name);
+        Item item = new Item(new Item.Properties().setId(key));
+        return Registry.register(BuiltInRegistries.ITEM, key, item);
+    }
+
+    private static Block registerBlock(
+            String name,
+            Function<BlockBehaviour.Properties, Block> factory
+    ) {
+        ResourceKey<Block> key = blockKey(name);
+        Block block = factory.apply(
+                BlockBehaviour.Properties.of().setId(key)
         );
+        return Registry.register(BuiltInRegistries.BLOCK, key, block);
     }
 
     private static Item registerBlockItem(String name, Block block) {
-        return Registry.register(
-                BuiltInRegistries.ITEM,
-                Identifier.fromNamespaceAndPath(MOD_ID, name),
-                new BlockItem(block, new Item.Properties())
+        ResourceKey<Item> key = itemKey(name);
+        BlockItem item = new BlockItem(
+                block,
+                new Item.Properties().setId(key).useBlockDescriptionPrefix()
         );
+        return Registry.register(BuiltInRegistries.ITEM, key, item);
     }
 }
